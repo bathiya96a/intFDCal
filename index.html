@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Deposit Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .calculator {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 20px 0;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            color: white;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+        }
+        
+        .results.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .result-label {
+            font-weight: 500;
+        }
+        
+        .result-value {
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+        
+        .currency {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Fixed Deposit Calculator</h1>
+        
+        <div class="input-group">
+            <label for="principal">Principal Amount</label>
+            <input type="number" id="principal" value="150000" step="1000" min="1000">
+        </div>
+        
+        <div class="input-group">
+            <label for="currency">Currency</label>
+            <select id="currency">
+                <option value="LKR">LKR (Sri Lankan Rupee)</option>
+                <option value="USD">USD (US Dollar)</option>
+                <option value="EUR">EUR (Euro)</option>
+                <option value="GBP">GBP (British Pound)</option>
+                <option value="INR">INR (Indian Rupee)</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label for="rate">Annual Interest Rate (%)</label>
+            <input type="number" id="rate" value="7.0300" step="0.0001" min="0.01" max="50">
+        </div>
+        
+        <div class="input-group">
+            <label for="period">Period (Months)</label>
+            <input type="number" id="period" value="12" step="1" min="1" max="120">
+        </div>
+        
+        <div class="input-group">
+            <label for="payoutType">Interest Payout</label>
+            <select id="payoutType">
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="annually">Annually</option>
+                <option value="maturity">At Maturity</option>
+            </select>
+        </div>
+        
+        <button class="calculate-btn" onclick="calculateFD()">Calculate Returns</button>
+        
+        <div id="results" class="results">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        function calculateFD() {
+            const principal = parseFloat(document.getElementById('principal').value);
+            const currency = document.getElementById('currency').value;
+            const annualRate = parseFloat(document.getElementById('rate').value);
+            const periodMonths = parseInt(document.getElementById('period').value);
+            const payoutType = document.getElementById('payoutType').value;
+            
+            if (!principal || !annualRate || !periodMonths) {
+                alert('Please fill in all fields with valid values');
+                return;
+            }
+            
+            let results = {};
+            
+            // Calculate based on payout type
+            switch(payoutType) {
+                case 'monthly':
+                    results = calculateMonthlyPayout(principal, annualRate, periodMonths);
+                    break;
+                case 'quarterly':
+                    results = calculateQuarterlyPayout(principal, annualRate, periodMonths);
+                    break;
+                case 'annually':
+                    results = calculateAnnualPayout(principal, annualRate, periodMonths);
+                    break;
+                case 'maturity':
+                    results = calculateMaturityPayout(principal, annualRate, periodMonths);
+                    break;
+            }
+            
+            displayResults(results, currency, payoutType);
+        }
+        
+        function calculateMonthlyPayout(principal, annualRate, periodMonths) {
+            const monthlyRate = annualRate / 12 / 100;
+            const monthlyInterest = principal * monthlyRate;
+            const totalInterest = monthlyInterest * periodMonths;
+            
+            return {
+                periodicPayment: monthlyInterest,
+                totalInterest: totalInterest,
+                totalAmount: principal + totalInterest,
+                paymentFrequency: 'Monthly'
+            };
+        }
+        
+        function calculateQuarterlyPayout(principal, annualRate, periodMonths) {
+            const quarterlyRate = annualRate / 4 / 100;
+            const quarterlyInterest = principal * quarterlyRate;
+            const numberOfQuarters = Math.floor(periodMonths / 3);
+            const totalInterest = quarterlyInterest * numberOfQuarters;
+            
+            return {
+                periodicPayment: quarterlyInterest,
+                totalInterest: totalInterest,
+                totalAmount: principal + totalInterest,
+                paymentFrequency: 'Quarterly',
+                numberOfPayments: numberOfQuarters
+            };
+        }
+        
+        function calculateAnnualPayout(principal, annualRate, periodMonths) {
+            const annualInterest = principal * (annualRate / 100);
+            const numberOfYears = Math.floor(periodMonths / 12);
+            const totalInterest = annualInterest * numberOfYears;
+            
+            return {
+                periodicPayment: annualInterest,
+                totalInterest: totalInterest,
+                totalAmount: principal + totalInterest,
+                paymentFrequency: 'Annually',
+                numberOfPayments: numberOfYears
+            };
+        }
+        
+        function calculateMaturityPayout(principal, annualRate, periodMonths) {
+            // Compound interest calculation
+            const monthlyRate = annualRate / 12 / 100;
+            const compoundAmount = principal * Math.pow(1 + monthlyRate, periodMonths);
+            const totalInterest = compoundAmount - principal;
+            
+            return {
+                periodicPayment: compoundAmount,
+                totalInterest: totalInterest,
+                totalAmount: compoundAmount,
+                paymentFrequency: 'At Maturity'
+            };
+        }
+        
+        function displayResults(results, currency, payoutType) {
+            const resultsDiv = document.getElementById('results');
+            
+            let html = `
+                <div class="result-item">
+                    <span class="result-label">${results.paymentFrequency} Payment:</span>
+                    <span class="result-value">${formatCurrency(results.periodicPayment, currency)}</span>
+                </div>
+            `;
+            
+            if (results.numberOfPayments) {
+                html += `
+                    <div class="result-item">
+                        <span class="result-label">Number of Payments:</span>
+                        <span class="result-value">${results.numberOfPayments}</span>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="result-item">
+                    <span class="result-label">Total Interest Earned:</span>
+                    <span class="result-value">${formatCurrency(results.totalInterest, currency)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Total Amount:</span>
+                    <span class="result-value">${formatCurrency(results.totalAmount, currency)}</span>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('show');
+        }
+        
+        function formatCurrency(amount, currency) {
+            return `${currency} ${amount.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })}`;
+        }
+        
+        // Calculate on page load with default values
+        window.onload = function() {
+            calculateFD();
+        };
+    </script>
+</body>
+</html>
